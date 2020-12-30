@@ -1,0 +1,41 @@
+{
+  "name": "stardoll-bl",
+  "version": "1.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --windows nsis:x64"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^11.1.1",
+    "electron-builder": "^22.9.1"
+  },
+  "build": {
+    "appId": "com.sd.bl",
+    "productName": "Stardoll BL",
+    "extraResources": [
+      "*.dll"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    }
+  },
+  "dependencies": {
+    "electron-context-menu": "^2.3.1"
+  }
+}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="./styles/main.css">
+</head>
+
+<body>
+    <div class="navigation-menu">
+        <div class="logo">
+            <img src="./images/icon.ico" alt="">
+            <span class="title">Stardoll</span>
+        </div>
+        <div class="lds-ring page-loader hide">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <div class="drop-menu hide">
+            <div id="full-screen">
+                <ion-icon name="expand-outline"></ion-icon>
+                <span>Full Screen</span>
+            </div>
+            <div id="zoom-in">
+                <ion-icon name="add-circle-outline"></ion-icon>
+                <span>Zoom In</span>
+            </div>
+            <div id="zoom-out">
+                <ion-icon name="remove-circle-outline"></ion-icon>
+                <span>Zoom Out</span>
+            </div>
+        </div>
+        <ion-icon id="more" name="ellipsis-vertical-outline"></ion-icon>
+        <ion-icon id="back" name="arrow-back-outline"></ion-icon>
+        <ion-icon id="reload" name="refresh-outline"></ion-icon>
+        <ion-icon id="minimize" name="remove-outline"></ion-icon>
+        <ion-icon class="close" name="close-outline"></ion-icon>
+    </div>
+    <div class="loading-screen">
+        <div class="lds-roller">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+    <webview style="height: calc(100vh - 40px);" src="http://www.stardoll.com/" plugins allowpopups></webview>
+    <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
+    <script src="./scripts/main.js"></script>
+</body>
+
+</html>
