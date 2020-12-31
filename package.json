@@ -1,6 +1,6 @@
 {
   "name": "stardoll-bl",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -36,6 +36,8 @@
     }
   },
   "dependencies": {
-    "electron-context-menu": "^2.3.1"
+    "electron-context-menu": "^2.3.1",
+    "http-proxy": "^1.18.1",
+    "xml2js": "^0.4.23"
   }
 }

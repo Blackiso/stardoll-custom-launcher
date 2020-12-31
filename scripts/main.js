@@ -10,6 +10,8 @@
     const close = document.querySelector('.close');
     const zoomIn = document.querySelector('#zoom-in');
     const zoomOut = document.querySelector('#zoom-out');
+    const settings = document.querySelector('#settings');
+    const settingsContainer = document.querySelector('.settings-container');
     const fullScreen = document.querySelector('#full-screen');
     const loader = document.querySelector('.loading-screen');
     const title = document.querySelector('.title');
@@ -17,8 +19,15 @@
     const dropMenu = document.querySelector('.drop-menu');
     const pageLoader = document.querySelector('.page-loader');
     const zoomLevelEl = document.querySelector('.zoom-level');
+    const closeSettings = document.querySelector('.cl');
+    const notificationsToggle = document.querySelector('#notifications-toggle');
 
     let zoomLevel = 0;
+    let allowNotifications = window.localStorage.getItem('notifications');
+
+    if (allowNotifications !== null) {
+        setNotifications(allowNotifications);
+    }
 
     reload.addEventListener('click', (e) => {
     	webview.reload();
@@ -45,6 +54,11 @@
             webview.setZoomLevel(zoomLevel);
             displayZoomLevel();
         }
+    }
+
+    function setNotifications(value) {
+        notificationsToggle.checked = value;
+        window.localStorage.setItem('notifications', value);
     }
 
     webview.addEventListener('did-finish-load', (e) => {
@@ -82,6 +96,15 @@
         setZoom(false);
     });
 
+    settings.addEventListener('click', (e) => {
+        settingsContainer.classList.remove('hide');
+        dropMenu.classList.toggle('hide');
+    });
+
+    closeSettings.addEventListener('click', (e) => {
+        settingsContainer.classList.add('hide');
+    });
+
     fullScreen.addEventListener('click', (e) => {
     	let currentWindow = remote.getCurrentWindow()
         currentWindow.setFullScreen(!currentWindow.isFullScreen());
@@ -90,6 +113,10 @@
 
     more.addEventListener('click', (e) => {
     	dropMenu.classList.toggle('hide');
+    });
+
+    notificationsToggle.addEventListener('change', (e) => {
+        setNotifications(notificationsToggle.checked);
     });
 
     ipcRenderer.on('zoomIn', (event, messages) => {
@@ -102,6 +129,16 @@
 
     ipcRenderer.on('zoomReset', (event, messages) => {
         setZoom(false, true);
+    });
+
+    ipcRenderer.on('notification', (event, messages) => {
+        if (notificationsToggle.checked) {
+            const myNotification = new Notification('New message from ' + messages.$.from.split(':')[1], {
+                title: 'New message from ' + messages.$.from.split(':')[1],
+                body: messages.body[0],
+                icon: './images/icon.ico'
+            });
+        }
     });
 
 })();

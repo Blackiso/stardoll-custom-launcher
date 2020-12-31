@@ -1,11 +1,13 @@
-const { app, BrowserWindow, BrowserView, globalShortcut, ipcMain } = require('electron');
+const { app, BrowserWindow, BrowserView, globalShortcut, Notification } = require('electron');
+const { ProxyServer } = require('./scripts/proxy');
 const contextMenu = require('electron-context-menu');
 const path = require('path');
+const Proxy = new ProxyServer();
 
-app.commandLine.appendSwitch('ppapi-flash-path', path.join((__dirname.includes(".asar") ? process.resourcesPath : __dirname) + '/PepperFlashPlayer.dll'))
+app.commandLine.appendSwitch('ppapi-flash-path', path.join((__dirname.includes(".asar") ? process.resourcesPath : __dirname) + '/PepperFlashPlayer.dll'));
 app.commandLine.appendSwitch('ppapi-flash-version', '32.0.0.293');
 
-
+app.setAppUserModelId('Stardoll BL');
 
 function createWindow() {
     console.log(process.versions);
@@ -25,7 +27,11 @@ function createWindow() {
         }
     });
     win.loadURL(`file://${__dirname}/main.html`);
-    win.webContents.openDevTools();
+
+    Proxy.run();
+
+    win.webContents.session.setProxy({ proxyRules: Proxy.address });
+    // win.webContents.openDevTools();
 
     globalShortcut.register('CommandOrControl+Up', () => {
         console.log('Zoom+');
@@ -38,6 +44,12 @@ function createWindow() {
 
     globalShortcut.register('CommandOrControl+0', () => {
         win.webContents.send('zoomReset', '');
+    });
+
+    Proxy.events.on('message', (x) => {
+        if (!win.isFocused()) {
+            win.webContents.send('notification', x);
+        }
     });
 
 }
@@ -55,4 +67,3 @@ app.on('activate', () => {
         createWindow();
     }
 });
-

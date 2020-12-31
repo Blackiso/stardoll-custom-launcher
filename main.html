@@ -34,6 +34,10 @@
                 <ion-icon name="remove-circle-outline"></ion-icon>
                 <span>Zoom Out</span>
             </div>
+            <div id="settings">
+                <ion-icon name="settings-outline"></ion-icon>
+                <span>Settings</span>
+            </div>
         </div>
         <ion-icon id="more" name="ellipsis-vertical-outline"></ion-icon>
         <ion-icon id="back" name="arrow-back-outline"></ion-icon>
@@ -54,6 +58,25 @@
         </div>
     </div>
     <webview style="height: calc(100vh - 40px);" src="http://www.stardoll.com/" plugins allowpopups></webview>
+    <div class="settings-container hide">
+        <div class="settings">
+            <div class="header">
+                <div>
+                    <ion-icon name="settings-outline"></ion-icon> Settings
+                    <ion-icon class="cl" name="close-outline"></ion-icon>
+                </div>
+            </div>
+            <div class="body">
+                <div>
+                    <label class="switch">
+                        <input id="notifications-toggle" type="checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                    <span>Notifications</span>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="https://unpkg.com/ionicons@5.2.3/dist/ionicons.js"></script>
     <script src="./scripts/main.js"></script>
 </body>
