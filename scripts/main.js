@@ -57,6 +57,8 @@
     }
 
     function setNotifications(value) {
+        if (typeof value == 'string') value = value === 'true' ? true : false;
+        console.log(value);
         notificationsToggle.checked = value;
         window.localStorage.setItem('notifications', value);
     }
