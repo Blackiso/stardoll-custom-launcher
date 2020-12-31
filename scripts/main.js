@@ -22,6 +22,8 @@
     const closeSettings = document.querySelector('.cl');
     const notificationsToggle = document.querySelector('#notifications-toggle');
 
+    const notificationSound = new Audio('./audio/soft_notification.mp3');
+
     let zoomLevel = 0;
     let allowNotifications = window.localStorage.getItem('notifications');
 
@@ -141,6 +143,7 @@
                 icon: './images/icon.ico'
             });
         }
+        notificationSound.play();    
     });
 
 })();

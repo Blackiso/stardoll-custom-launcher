@@ -10,7 +10,7 @@ exports.ProxyServer = class proxy {
 
 	constructor() {
 		this.server = null;
-		this.port = 8080;
+		this.port = 6969;
 		this.regex_hostport = /^([^:]+)(:([0-9]+))?$/;
 		this.address = 'http://127.0.0.1:'+this.port;
 		this.events = new events.EventEmitter();
