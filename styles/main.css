@@ -309,3 +309,8 @@ ul {
         transform: rotate(360deg);
     }
 }
+
+.zoom-level {
+    margin-right: 10px;
+    font-size: 12px;
+}

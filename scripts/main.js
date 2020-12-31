@@ -1,7 +1,6 @@
 (function () {
 
-    const { webFrame } = require('electron');
-	const { remote } = require('electron');
+    const { webFrame, remote, ipcRenderer } = require('electron');
     const contextMenu = require('electron-context-menu');
 
 	const webview = document.querySelector('webview');
@@ -17,6 +16,9 @@
     const more = document.querySelector('#more');
     const dropMenu = document.querySelector('.drop-menu');
     const pageLoader = document.querySelector('.page-loader');
+    const zoomLevelEl = document.querySelector('.zoom-level');
+
+    let zoomLevel = 0;
 
     reload.addEventListener('click', (e) => {
     	webview.reload();
@@ -26,15 +28,27 @@
     	webview.goBack();
     });
 
-    onload = () => {
-        contextMenu({ 
-            window: webview,
-            showSearchWithGoogle : true
-        });
+    contextMenu({ 
+        window: webview,
+        showSearchWithGoogle : true
+    });
+
+    function displayZoomLevel() {
+        zoomLevelEl.innerHTML = (webview.getZoomFactor()*100).toFixed(0) + '%';
+        setTimeout(() => { zoomLevelEl.innerHTML = ''; }, 2000);
+    }
+
+    function setZoom(x, reset = null) {
+        if (webview) {
+            zoomLevel = x ? zoomLevel + 1 : zoomLevel - 1;
+            if (reset) zoomLevel = 0;
+            webview.setZoomLevel(zoomLevel);
+            displayZoomLevel();
+        }
     }
 
     webview.addEventListener('did-finish-load', (e) => {
-    	webview.executeJavaScript('window.zoom=function(o){-1==o?__zoom+=.1:__zoom-=.1,document.body.style.zoom=__zoom,console.log((100*__zoom).toFixed(0)),displayZoomCounter((100*__zoom).toFixed(0))};let __over=document.querySelector("#controlOverlay");__over&&__over.remove();let __zoom=1;function displayZoomCounter(o){var e=document.createElement("SPAN");e.innerHTML=o+"%",e.style.cssText="display: block; padding: 10px; font-size: 14px; color: white; background: black; position: fixed; bottom: 10px; left: 10px; z-index: 6000020; border-radius: 3px;",document.body.appendChild(e),setInterval(()=>{e.remove()},1e3)}window.addEventListener("keydown",o=>{(o.key="Control")&&(window.onmousewheel=(o=>{var e=Math.sign(o.deltaY);window.zoom(e)}))}),window.addEventListener("keyup",o=>{(o.key="Control")&&(window.onmousewheel=null)});');
+    	webview.executeJavaScript('let __over = document.querySelector("#controlOverlay");__over && __over.remove();');
 		title.innerHTML = webview.getTitle();
 	});
 
@@ -44,12 +58,13 @@
 	});
 
     webview.addEventListener('did-start-loading', (e) => {
+        zoomLevel = webview.getZoomLevel();
         pageLoader.classList.remove('hide');
     });
 
-	webview.addEventListener('dom-ready', () => {
-	  // webview.openDevTools();
-	});
+    webview.addEventListener("did-get-response-details", function(details) {
+        console.log(details); 
+    }); 
 
     minimize.addEventListener('click', (e) => {
     	remote.BrowserWindow.getFocusedWindow().minimize();
@@ -60,11 +75,11 @@
     });
 
     zoomIn.addEventListener('click', (e) => {
-        webview.executeJavaScript('window.zoom(-1);');
+        setZoom(true);
     });
 
     zoomOut.addEventListener('click', (e) => {
-        webview.executeJavaScript('window.zoom(1);');
+        setZoom(false);
     });
 
     fullScreen.addEventListener('click', (e) => {
@@ -75,6 +90,18 @@
 
     more.addEventListener('click', (e) => {
     	dropMenu.classList.toggle('hide');
+    });
+
+    ipcRenderer.on('zoomIn', (event, messages) => {
+        setZoom(true);
+    });
+
+    ipcRenderer.on('zoomOut', (event, messages) => {
+        setZoom(false);
+    });
+
+    ipcRenderer.on('zoomReset', (event, messages) => {
+        setZoom(false, true);
     });
 
 })();

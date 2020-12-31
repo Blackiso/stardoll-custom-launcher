@@ -1,9 +1,11 @@
-const { app, BrowserWindow, BrowserView } = require('electron');
+const { app, BrowserWindow, BrowserView, globalShortcut, ipcMain } = require('electron');
 const contextMenu = require('electron-context-menu');
 const path = require('path');
 
 app.commandLine.appendSwitch('ppapi-flash-path', path.join((__dirname.includes(".asar") ? process.resourcesPath : __dirname) + '/PepperFlashPlayer.dll'))
 app.commandLine.appendSwitch('ppapi-flash-version', '32.0.0.293');
+
+
 
 function createWindow() {
     console.log(process.versions);
@@ -23,7 +25,21 @@ function createWindow() {
         }
     });
     win.loadURL(`file://${__dirname}/main.html`);
-    // win.webContents.openDevTools();
+    win.webContents.openDevTools();
+
+    globalShortcut.register('CommandOrControl+Up', () => {
+        console.log('Zoom+');
+        win.webContents.send('zoomIn', '');
+    });
+
+    globalShortcut.register('CommandOrControl+Down', () => {
+        win.webContents.send('zoomOut', '');
+    });
+
+    globalShortcut.register('CommandOrControl+0', () => {
+        win.webContents.send('zoomReset', '');
+    });
+
 }
 
 app.whenReady().then(createWindow);
@@ -39,3 +55,4 @@ app.on('activate', () => {
         createWindow();
     }
 });
+
