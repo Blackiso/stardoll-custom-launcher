@@ -83,19 +83,7 @@
         setTopTab(webview);
         tabArray.push(webview);
 
-        let title = createTabHead(webview);
-
-        webview.addEventListener('did-finish-load', (e) => {
-            title.innerHTML = webview.getTitle();
-            webview.executeJavaScript('let __over = document.querySelector("#controlOverlay");__over && __over.remove();');
-        });
-
-        webview.addEventListener('did-stop-loading', (e) => {
-            loader.classList.add('hide');
-            pageLoader.classList.add('hide');
-        });
-
-        webview.addEventListener('did-start-loading', (e) => {
+        setTimeout(() => {
             contextMenu({ 
                 window: webview,
                 showSearchWithGoogle : true,
@@ -109,6 +97,21 @@
                     }
                 ]
             });
+        });     
+
+        let title = createTabHead(webview);
+
+        webview.addEventListener('did-finish-load', (e) => {
+            title.innerHTML = webview.getTitle();
+            webview.executeJavaScript('let __over = document.querySelector("#controlOverlay");__over && __over.remove();');
+        });
+
+        webview.addEventListener('did-stop-loading', (e) => {
+            loader.classList.add('hide');
+            pageLoader.classList.add('hide');
+        });
+
+        webview.addEventListener('did-start-loading', (e) => {
             zoomLevel = webview.getZoomLevel();
             pageLoader.classList.remove('hide');
         });
