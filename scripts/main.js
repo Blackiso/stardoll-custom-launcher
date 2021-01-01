@@ -3,7 +3,8 @@
     const { webFrame, remote, ipcRenderer } = require('electron');
     const contextMenu = require('electron-context-menu');
 
-	const webview = document.querySelector('webview');
+    const tabsBody = document.querySelector('.tabs');
+	const tabsHead = document.querySelector('.tabs-titles');
     const reload = document.querySelector('#reload');
     const back = document.querySelector('#back');
     const minimize = document.querySelector('#minimize');
@@ -14,7 +15,6 @@
     const settingsContainer = document.querySelector('.settings-container');
     const fullScreen = document.querySelector('#full-screen');
     const loader = document.querySelector('.loading-screen');
-    const title = document.querySelector('.title');
     const more = document.querySelector('#more');
     const dropMenu = document.querySelector('.drop-menu');
     const pageLoader = document.querySelector('.page-loader');
@@ -24,6 +24,10 @@
 
     const notificationSound = new Audio('./audio/soft_notification.mp3');
 
+    let currentWebview = null;
+    let tabArray = [];
+    let tabHeadArray = [];
+
     let zoomLevel = 0;
     let allowNotifications = window.localStorage.getItem('notifications');
 
@@ -32,28 +36,23 @@
     }
 
     reload.addEventListener('click', (e) => {
-    	webview.reload();
+    	currentWebview.reload();
     });
 
     back.addEventListener('click', (e) => {
-    	webview.goBack();
-    });
-
-    contextMenu({ 
-        window: webview,
-        showSearchWithGoogle : true
+    	currentWebview.goBack();
     });
 
     function displayZoomLevel() {
-        zoomLevelEl.innerHTML = (webview.getZoomFactor()*100).toFixed(0) + '%';
+        zoomLevelEl.innerHTML = (currentWebview.getZoomFactor()*100).toFixed(0) + '%';
         setTimeout(() => { zoomLevelEl.innerHTML = ''; }, 2000);
     }
 
     function setZoom(x, reset = null) {
-        if (webview) {
+        if (currentWebview) {
             zoomLevel = x ? zoomLevel + 1 : zoomLevel - 1;
             if (reset) zoomLevel = 0;
-            webview.setZoomLevel(zoomLevel);
+            currentWebview.setZoomLevel(zoomLevel);
             displayZoomLevel();
         }
     }
@@ -65,24 +64,116 @@
         window.localStorage.setItem('notifications', value);
     }
 
-    webview.addEventListener('did-finish-load', (e) => {
-    	webview.executeJavaScript('let __over = document.querySelector("#controlOverlay");__over && __over.remove();');
-		title.innerHTML = webview.getTitle();
-	});
+    function isPageUrl(url) {
+        return url !== "";
+    }
 
-	webview.addEventListener('did-stop-loading', (e) => {
-		loader.classList.add('hide');
-        pageLoader.classList.add('hide');
-	});
+    openNewTab('http://www.stardoll.com/');
 
-    webview.addEventListener('did-start-loading', (e) => {
-        zoomLevel = webview.getZoomLevel();
-        pageLoader.classList.remove('hide');
-    });
+    function openNewTab(url) {
+        let webview = document.createElement('webview');
 
-    webview.addEventListener("did-get-response-details", function(details) {
-        console.log(details); 
-    }); 
+        webview.setAttribute('plugins', true);
+        // webview.setAttribute('allowpopups', true);
+
+        webview.src = url;
+        webview.classList.add('webview');
+        tabsBody.appendChild(webview);
+
+        setTopTab(webview);
+        tabArray.push(webview);
+
+        let title = createTabHead(webview);
+
+        webview.addEventListener('did-finish-load', (e) => {
+            title.innerHTML = webview.getTitle();
+            webview.executeJavaScript('let __over = document.querySelector("#controlOverlay");__over && __over.remove();');
+        });
+
+        webview.addEventListener('did-stop-loading', (e) => {
+            loader.classList.add('hide');
+            pageLoader.classList.add('hide');
+        });
+
+        webview.addEventListener('did-start-loading', (e) => {
+            contextMenu({ 
+                window: webview,
+                showSearchWithGoogle : true,
+                prepend: (defaultActions, params, browserWindow) => [
+                    {
+                        label: 'Open link in new tab',
+                        visible: isPageUrl(params.linkURL),
+                        click: () => {
+                            if (tabArray.length < 4) openNewTab(params.linkURL);
+                        }
+                    }
+                ]
+            });
+            zoomLevel = webview.getZoomLevel();
+            pageLoader.classList.remove('hide');
+        });
+
+        webview.addEventListener('new-window', async (e) => {
+            e.preventDefault();
+            openNewTab(e.url);
+        });
+
+    }
+    
+    function createTabHead(webview) {
+        let cont = document.createElement('DIV');
+        let img = document.createElement('IMG');
+        let span = document.createElement('SPAN');
+        let icon = document.createElement('ion-icon');
+
+        cont.classList.add('logo');
+        img.src = './images/icon.ico';
+        span.innerHTML = 'Stardoll';
+        icon.name = 'close-outline';
+
+        cont.appendChild(img);
+        cont.appendChild(span);
+        cont.appendChild(icon);
+        tabsHead.appendChild(cont);
+
+        for (let i = 0; i <  tabsHead.children.length; i++) {
+            tabsHead.children[i].classList.remove('tab-active');
+        }
+        cont.classList.add('tab-active');
+
+        cont.onclick = (e) => {
+            if (e.target !== icon) {
+                    setTopTab(webview);
+                    for (let i = 0; i <  tabsHead.children.length; i++) {
+                    tabsHead.children[i].classList.remove('tab-active');
+                }
+                cont.classList.add('tab-active');
+            }   
+        }
+
+        icon.onclick = (e) => {
+            webview.remove();
+            cont.remove();
+
+            tabArray.splice(tabArray.indexOf(webview), 1);
+            tabHeadArray.splice(tabHeadArray.indexOf(cont), 1);
+
+            setTopTab(tabArray[tabArray.length-1]);
+            tabHeadArray[tabHeadArray.length-1].classList.add('tab-active');
+        }
+
+        tabHeadArray.push(cont);
+
+        return span;
+    }
+
+    function setTopTab(webview) {
+        currentWebview = webview;
+        for (let i = 0; i <  tabsBody.children.length; i++) {
+            tabsBody.children[i].classList.remove('top-tab');
+        }
+        webview.classList.add('top-tab');
+    }
 
     minimize.addEventListener('click', (e) => {
     	remote.BrowserWindow.getFocusedWindow().minimize();

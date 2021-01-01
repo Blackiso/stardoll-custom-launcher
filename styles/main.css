@@ -72,26 +72,84 @@ ul {
     align-items: center;
     justify-content: flex-end;
     box-sizing: border-box;
-    padding: 0 10px;
+    padding-right: 10px;
     font-size: 22px;
     position: relative;
     user-select: none !important;
 }
 
-.navigation-menu>.logo {
-    margin-right: auto;
+.navigation-menu> .tabs-titles {
+    display: flex;
+    height: 100%;
+}
+
+.dragable {
+    flex: 1;
+    -webkit-user-select: none;
+    -webkit-app-region: drag;
+    height: 100%;
+}
+
+.navigation-menu> .tabs-titles > .logo {
     display: flex;
     font-size: 13px;
     align-items: center;
     flex: 1;
     height: 100%;
-    -webkit-user-select: none;
-    -webkit-app-region: drag;
+    padding: 0 10px;
+    border-left: 1px solid #3e3b3b;
+    cursor: pointer;
+    transition: .3s;
 }
 
-.navigation-menu>.logo>img {
+.navigation-menu> .tabs-titles > .logo:first-of-type {
+    border-left: none;
+}
+
+.navigation-menu> .tabs-titles > .logo:hover {
+    background-color: #ffd700;
+    color: black;
+}
+
+.tab-active {
+    background-color: #ffd700 !important;
+    color: black !important;
+}
+
+.tab-active:only-child {
+    background-color: transparent !important;
+    color: white !important;
+}
+
+.navigation-menu> .tabs-titles > .logo:only-child:hover {
+    background-color: transparent;
+    color: white;
+    cursor: default;
+}
+
+.navigation-menu> .tabs-titles > .logo:only-child > span {
+    max-width: 100%;
+}
+
+.navigation-menu> .tabs-titles > .logo:only-child > ion-icon {
+    display: none;
+}
+
+.navigation-menu> .tabs-titles > .logo > img {
     width: 20px;
     margin-right: 10px;
+}
+
+.navigation-menu> .tabs-titles > .logo > span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.navigation-menu> .tabs-titles > .logo > ion-icon {
+    font-size: 17px;
+    margin-left: 10px;
 }
 
 .navigation-menu>ion-icon {
@@ -267,7 +325,6 @@ ul {
     }
 }
 
-
 .lds-ring {
     display: inline-block;
     position: relative;
@@ -284,6 +341,26 @@ ul {
     height: 14px;
     margin: 2px;
     border: 2px solid gold;
+    border-radius: 50%;
+    animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: gold transparent transparent transparent;
+}
+
+.main-loader {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.main-loader div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    margin: 4px;
+    border: 4px solid gold;
     border-radius: 50%;
     animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
     border-color: gold transparent transparent transparent;
@@ -323,7 +400,7 @@ ul {
     position: fixed;
     top: 40px;
     left: 0;
-    z-index: 500;
+    z-index: 90000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -365,7 +442,7 @@ ul {
     padding: 20px;
 }
 
-.settings>.body > div {
+.settings>.body>div {
     display: flex;
     align-items: center;
     font-size: 14px;
@@ -429,4 +506,19 @@ input:checked+.slider:before {
 
 .slider.round:before {
     border-radius: 50%;
+}
+
+.tabs {
+    height: calc(100vh - 40px);
+    position: relative;
+}
+
+.tabs > .webview {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+}
+
+.top-tab {
+    z-index: 3000;
 }

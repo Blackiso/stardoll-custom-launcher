@@ -79,18 +79,16 @@ exports.ProxyServer = class proxy {
 	    response.write = (data) => {
 	        if (urlObj.href == 'http://www.stardoll.com/c/') {
 	        	parseString(data.toString(), (err, result) => {
-	        		if (typeof result.body !== 'undefined' && typeof result.body.message !== 'undefined') {
+	        		if (typeof result !== 'undefined' && result !== null && typeof result.body !== 'undefined' && typeof result.body.message !== 'undefined') {
 	        			let message = result.body.message[0];
 	        			if (message.$.type && message.$.type == 'chat') {
 	        				this.events.emit('message', message);
 		        		}
 	        		}
-	        		
 				});
 			}
 	        response.oldWrite(data);
 	    }
-
 	}
 
 	getHostPortFromString(hostString, defaultPort) {

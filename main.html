@@ -10,10 +10,29 @@
 
 <body>
     <div class="navigation-menu">
-        <div class="logo">
-            <img src="./images/icon.ico" alt="">
-            <span class="title">Stardoll</span>
+        <div class="tabs-titles">
+            <!-- <div class="logo">
+                <img src="./images/icon.ico" alt="">
+                <span class="title">Stardoll</span>
+                <ion-icon name="close-outline"></ion-icon>
+            </div> -->
+            <!-- <div class="logo">
+                <img src="./images/icon.ico" alt="">
+                <span class="title">Stardoll</span>
+                <ion-icon name="close-outline"></ion-icon>
+            </div>
+            <div class="logo">
+                <img src="./images/icon.ico" alt="">
+                <span class="title">Stardoll</span>
+                <ion-icon name="close-outline"></ion-icon>
+            </div>
+            <div class="logo">
+                <img src="./images/icon.ico" alt="">
+                <span class="title">Stardoll</span>
+                <ion-icon name="close-outline"></ion-icon>
+            </div> -->
         </div>
+        <div class="dragable"></div>
         <span class="zoom-level"></span>
         <div class="lds-ring page-loader hide">
             <div></div>
@@ -46,18 +65,17 @@
         <ion-icon class="close" name="close-outline"></ion-icon>
     </div>
     <div class="loading-screen">
-        <div class="lds-roller">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
+        <div class="lds-ring page-loader main-loader">
             <div></div>
             <div></div>
             <div></div>
             <div></div>
         </div>
     </div>
-    <webview style="height: calc(100vh - 40px);" src="http://www.stardoll.com/" plugins allowpopups></webview>
+    <div class="tabs">
+        <!-- <webview class="webview top-tab" src="http://www.stardoll.com/" plugins allowpopups></webview>
+        <webview class="webview" src="http://www.stardoll.com/en/clubs/" plugins allowpopups></webview> -->
+    </div>
     <div class="settings-container hide">
         <div class="settings">
             <div class="header">
