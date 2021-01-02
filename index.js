@@ -1,4 +1,4 @@
-const { app, BrowserWindow, BrowserView, globalShortcut, Notification } = require('electron');
+const { app, BrowserWindow, BrowserView, globalShortcut, Notification, ipcMain } = require('electron');
 const { ProxyServer } = require('./scripts/proxy');
 const contextMenu = require('electron-context-menu');
 const path = require('path');
@@ -10,8 +10,6 @@ app.commandLine.appendSwitch('ppapi-flash-version', '32.0.0.293');
 app.setAppUserModelId('Stardoll BL');
 
 function createWindow() {
-    console.log(process.versions);
-    const view = new BrowserView();
     const win = new BrowserWindow({
         width: 1200,
         minWidth: 1050,
@@ -66,4 +64,8 @@ app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
+});
+
+ipcMain.on('offline', (event, x) => {
+    Proxy.offline(x);
 });

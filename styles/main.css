@@ -446,6 +446,11 @@ ul {
     display: flex;
     align-items: center;
     font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.settings>.body>div:last-of-type {
+    margin-bottom: 0;
 }
 
 .switch {
@@ -521,4 +526,8 @@ input:checked+.slider:before {
 
 .top-tab {
     z-index: 3000;
+}
+
+#offline {
+    color: red;
 }

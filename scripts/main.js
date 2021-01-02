@@ -1,10 +1,10 @@
-(function () {
+(function() {
 
     const { webFrame, remote, ipcRenderer } = require('electron');
     const contextMenu = require('electron-context-menu');
 
     const tabsBody = document.querySelector('.tabs');
-	const tabsHead = document.querySelector('.tabs-titles');
+    const tabsHead = document.querySelector('.tabs-titles');
     const reload = document.querySelector('#reload');
     const back = document.querySelector('#back');
     const minimize = document.querySelector('#minimize');
@@ -21,6 +21,8 @@
     const zoomLevelEl = document.querySelector('.zoom-level');
     const closeSettings = document.querySelector('.cl');
     const notificationsToggle = document.querySelector('#notifications-toggle');
+    const offlineToggle = document.querySelector('#offline-toggle');
+    const offlineIndicator = document.querySelector('#offline');
 
     const notificationSound = new Audio('./audio/soft_notification.mp3');
 
@@ -35,16 +37,24 @@
         setNotifications(allowNotifications);
     }
 
+    let offlineMode = window.localStorage.getItem('offline');
+
+    if (offlineMode !== null) {
+        setOffline(offlineMode);
+    }
+
+    openNewTab('http://www.stardoll.com/');
+
     reload.addEventListener('click', (e) => {
-    	currentWebview.reload();
+        currentWebview.reload();
     });
 
     back.addEventListener('click', (e) => {
-    	currentWebview.goBack();
+        currentWebview.goBack();
     });
 
     function displayZoomLevel() {
-        zoomLevelEl.innerHTML = (currentWebview.getZoomFactor()*100).toFixed(0) + '%';
+        zoomLevelEl.innerHTML = (currentWebview.getZoomFactor() * 100).toFixed(0) + '%';
         setTimeout(() => { zoomLevelEl.innerHTML = ''; }, 2000);
     }
 
@@ -64,11 +74,21 @@
         window.localStorage.setItem('notifications', value);
     }
 
+    function setOffline(value) {
+        if (typeof value == 'string') value = value === 'true' ? true : false;
+        offlineToggle.checked = value;
+        window.localStorage.setItem('offline', value);
+        ipcRenderer.send('offline', value);
+        if (value) {
+            offlineIndicator.classList.remove('hide');
+        }else {
+            offlineIndicator.classList.add('hide');
+        }
+    }
+
     function isPageUrl(url) {
         return url !== "";
     }
-
-    openNewTab('http://www.stardoll.com/');
 
     function openNewTab(url) {
         let webview = document.createElement('webview');
@@ -84,20 +104,18 @@
         tabArray.push(webview);
 
         setTimeout(() => {
-            contextMenu({ 
+            contextMenu({
                 window: webview,
-                showSearchWithGoogle : true,
-                prepend: (defaultActions, params, browserWindow) => [
-                    {
-                        label: 'Open link in new tab',
-                        visible: isPageUrl(params.linkURL),
-                        click: () => {
-                            if (tabArray.length < 4) openNewTab(params.linkURL);
-                        }
+                showSearchWithGoogle: true,
+                prepend: (defaultActions, params, browserWindow) => [{
+                    label: 'Open link in new tab',
+                    visible: isPageUrl(params.linkURL),
+                    click: () => {
+                        if (tabArray.length < 4) openNewTab(params.linkURL);
                     }
-                ]
+                }]
             });
-        });     
+        });
 
         let title = createTabHead(webview);
 
@@ -122,7 +140,7 @@
         });
 
     }
-    
+
     function createTabHead(webview) {
         let cont = document.createElement('DIV');
         let img = document.createElement('IMG');
@@ -139,19 +157,19 @@
         cont.appendChild(icon);
         tabsHead.appendChild(cont);
 
-        for (let i = 0; i <  tabsHead.children.length; i++) {
+        for (let i = 0; i < tabsHead.children.length; i++) {
             tabsHead.children[i].classList.remove('tab-active');
         }
         cont.classList.add('tab-active');
 
         cont.onclick = (e) => {
             if (e.target !== icon) {
-                    setTopTab(webview);
-                    for (let i = 0; i <  tabsHead.children.length; i++) {
+                setTopTab(webview);
+                for (let i = 0; i < tabsHead.children.length; i++) {
                     tabsHead.children[i].classList.remove('tab-active');
                 }
                 cont.classList.add('tab-active');
-            }   
+            }
         }
 
         icon.onclick = (e) => {
@@ -161,8 +179,8 @@
             tabArray.splice(tabArray.indexOf(webview), 1);
             tabHeadArray.splice(tabHeadArray.indexOf(cont), 1);
 
-            setTopTab(tabArray[tabArray.length-1]);
-            tabHeadArray[tabHeadArray.length-1].classList.add('tab-active');
+            setTopTab(tabArray[tabArray.length - 1]);
+            tabHeadArray[tabHeadArray.length - 1].classList.add('tab-active');
         }
 
         tabHeadArray.push(cont);
@@ -172,18 +190,18 @@
 
     function setTopTab(webview) {
         currentWebview = webview;
-        for (let i = 0; i <  tabsBody.children.length; i++) {
+        for (let i = 0; i < tabsBody.children.length; i++) {
             tabsBody.children[i].classList.remove('top-tab');
         }
         webview.classList.add('top-tab');
     }
 
     minimize.addEventListener('click', (e) => {
-    	remote.BrowserWindow.getFocusedWindow().minimize();
+        remote.BrowserWindow.getFocusedWindow().minimize();
     });
 
     close.addEventListener('click', (e) => {
-    	remote.BrowserWindow.getFocusedWindow().close();
+        remote.BrowserWindow.getFocusedWindow().close();
     });
 
     zoomIn.addEventListener('click', (e) => {
@@ -204,17 +222,21 @@
     });
 
     fullScreen.addEventListener('click', (e) => {
-    	let currentWindow = remote.getCurrentWindow()
+        let currentWindow = remote.getCurrentWindow()
         currentWindow.setFullScreen(!currentWindow.isFullScreen());
         dropMenu.classList.toggle('hide');
     });
 
     more.addEventListener('click', (e) => {
-    	dropMenu.classList.toggle('hide');
+        dropMenu.classList.toggle('hide');
     });
 
     notificationsToggle.addEventListener('change', (e) => {
         setNotifications(notificationsToggle.checked);
+    });
+
+    offlineToggle.addEventListener('change', (e) => {
+        setOffline(offlineToggle.checked);
     });
 
     ipcRenderer.on('zoomIn', (event, messages) => {
@@ -237,7 +259,7 @@
                 icon: './images/icon.ico'
             });
         }
-        notificationSound.play();    
+        notificationSound.play();
     });
 
 })();
