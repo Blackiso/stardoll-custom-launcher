@@ -22,6 +22,7 @@
     const closeSettings = document.querySelector('.cl');
     const notificationsToggle = document.querySelector('#notifications-toggle');
     const offlineToggle = document.querySelector('#offline-toggle');
+    const languageToggle = document.querySelector('#language-toggle');
     const offlineIndicator = document.querySelector('#offline');
 
     const notificationSound = new Audio('./audio/soft_notification.mp3');
@@ -41,6 +42,12 @@
 
     if (offlineMode !== null) {
         setOffline(offlineMode);
+    }
+
+    let languageFilter = window.localStorage.getItem('language_filter');
+
+    if (languageFilter !== null) {
+        setLlanguageFilter(languageFilter);
     }
 
     openNewTab('http://www.stardoll.com/');
@@ -72,6 +79,13 @@
         console.log(value);
         notificationsToggle.checked = value;
         window.localStorage.setItem('notifications', value);
+    }
+
+    function setLlanguageFilter(value) {
+        if (typeof value == 'string') value = value === 'true' ? true : false;
+        languageToggle.checked = value;
+        window.localStorage.setItem('language_filter', value);
+        ipcRenderer.send('language_filter', value);
     }
 
     function setOffline(value) {
@@ -115,7 +129,7 @@
                     }
                 }]
             });
-        });
+        }, 100);
 
         let title = createTabHead(webview);
 
@@ -237,6 +251,10 @@
 
     offlineToggle.addEventListener('change', (e) => {
         setOffline(offlineToggle.checked);
+    });
+
+    languageToggle.addEventListener('change', (e) => {
+        setLlanguageFilter(languageToggle.checked);
     });
 
     ipcRenderer.on('zoomIn', (event, messages) => {

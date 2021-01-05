@@ -78,7 +78,7 @@ ul {
     user-select: none !important;
 }
 
-.navigation-menu> .tabs-titles {
+.navigation-menu>.tabs-titles {
     display: flex;
     height: 100%;
 }
@@ -90,7 +90,7 @@ ul {
     height: 100%;
 }
 
-.navigation-menu> .tabs-titles > .logo {
+.navigation-menu>.tabs-titles>.logo {
     display: flex;
     font-size: 13px;
     align-items: center;
@@ -102,11 +102,11 @@ ul {
     transition: .3s;
 }
 
-.navigation-menu> .tabs-titles > .logo:first-of-type {
+.navigation-menu>.tabs-titles>.logo:first-of-type {
     border-left: none;
 }
 
-.navigation-menu> .tabs-titles > .logo:hover {
+.navigation-menu>.tabs-titles>.logo:hover {
     background-color: #ffd700;
     color: black;
 }
@@ -121,33 +121,33 @@ ul {
     color: white !important;
 }
 
-.navigation-menu> .tabs-titles > .logo:only-child:hover {
+.navigation-menu>.tabs-titles>.logo:only-child:hover {
     background-color: transparent;
     color: white;
     cursor: default;
 }
 
-.navigation-menu> .tabs-titles > .logo:only-child > span {
+.navigation-menu>.tabs-titles>.logo:only-child>span {
     max-width: 100%;
 }
 
-.navigation-menu> .tabs-titles > .logo:only-child > ion-icon {
+.navigation-menu>.tabs-titles>.logo:only-child>ion-icon {
     display: none;
 }
 
-.navigation-menu> .tabs-titles > .logo > img {
+.navigation-menu>.tabs-titles>.logo>img {
     width: 20px;
     margin-right: 10px;
 }
 
-.navigation-menu> .tabs-titles > .logo > span {
+.navigation-menu>.tabs-titles>.logo>span {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 150px;
 }
 
-.navigation-menu> .tabs-titles > .logo > ion-icon {
+.navigation-menu>.tabs-titles>.logo>ion-icon {
     font-size: 17px;
     margin-left: 10px;
 }
@@ -518,7 +518,7 @@ input:checked+.slider:before {
     position: relative;
 }
 
-.tabs > .webview {
+.tabs>.webview {
     height: 100%;
     width: 100%;
     position: absolute;

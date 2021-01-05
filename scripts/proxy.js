@@ -1,116 +1,121 @@
 const httpProxy = require("http-proxy");
 const http = require("http");
+const https = require("https");
 const url = require("url");
 const net = require('net');
 const events = require('events');
-const zlib = require("zlib");
-const parseString = require('xml2js').parseString;
+const fs = require('fs');
 
 exports.ProxyServer = class proxy {
 
     constructor() {
         this.server = null;
-        this.port = 6969;
-        this.regex_hostport = /^([^:]+)(:([0-9]+))?$/;
+        this.port = 8006;
         this.address = 'http://127.0.0.1:' + this.port;
-        this.events = new events.EventEmitter();
-        this.offlineMode = false;
+        this.proxy = httpProxy.createProxyServer();
+        this.middleware = {
+            after: [],
+            before: []
+        }
     }
 
-    run() {
-        this.server = http.createServer((req, res) => {
-            let target = this.proccessRequest(req, res);
-            let proxy = httpProxy.createProxyServer({});
+    run(call) {
+        this.server = http.createServer(async (request, response) => {
 
-            proxy.on("error", function(err, req, res) {
-                res.end();
+            let urlObj = url.parse(request.url);
+            let target = urlObj.protocol + "//" + urlObj.host;
+
+            request.target = target;
+
+            console.log("Proxy HTTP request for:", request.target);
+
+            this.runMiddleware('before', request, response);
+
+            console.log('new target', request.target);
+
+            this.proxy.web(request, response, { target: request.target }, function(e) {
+                if (e) console.log(e);
             });
 
-            proxy.web(req, res, { target: target });
-        }).listen(this.port);
-        this.initEvents();
-    }
-
-    initEvents() {
-        this.server.addListener('connect', (req, socket, bodyhead) => {
-            let hostPort = this.getHostPortFromString(req.url, 443);
-            let hostDomain = hostPort[0];
-            let port = parseInt(hostPort[1]);
-            let proxySocket = new net.Socket();
-
-            proxySocket.connect(port, hostDomain, function() {
-                proxySocket.write(bodyhead);
-                socket.write("HTTP/" + req.httpVersion + " 200 Connection established\r\n\r\n");
-            });
-
-            proxySocket.on('data', function(chunk) {
-                socket.write(chunk);
-            });
-
-            proxySocket.on('end', function() {
-                socket.end();
-            });
-
-            proxySocket.on('error', function() {
-                socket.write("HTTP/" + req.httpVersion + " 500 Connection error\r\n\r\n");
-                socket.end();
-            });
-
-            socket.on('data', function(chunk) {
-                proxySocket.write(chunk);
-            });
-
-            socket.on('end', function() {
-                proxySocket.end();
-            });
-
-            socket.on('error', function() {
-                proxySocket.end();
-            });
+        }).listen(this.port, (e) => {
+            if (e) return console.log(e);
+            call();
         });
+
+        this.proxy.on('proxyReq', (proxyReq, req, res, options) => {
+            this.runMiddleware('after', req, res);
+        });
+
+        this.server.on('connect', (req, clientSocket, head) => {
+            const { port, hostname } = url.parse(`//${req.url}`, false, true);
+            if (hostname && port) {
+                const serverErrorHandler = (err) => {
+                    console.error(err.message);
+                    if (clientSocket) {
+                        clientSocket.end(`HTTP/1.1 500 ${err.message}\r\n`);
+                    }
+                }
+                const serverEndHandler = () => {
+                    if (clientSocket) {
+                        clientSocket.end(`HTTP/1.1 500 External Server End\r\n`);
+                    }
+                }
+                const serverSocket = net.connect(port, hostname);
+                const clientErrorHandler = (err) => {
+                    console.error(err.message);
+                    if (serverSocket) {
+                        serverSocket.end();
+                    }
+                }
+                const clientEndHandler = () => {
+                    if (serverSocket) {
+                        serverSocket.end();
+                    }
+                }
+                clientSocket.on('error', clientErrorHandler);
+                clientSocket.on('end', clientEndHandler);
+                serverSocket.on('error', serverErrorHandler);
+                serverSocket.on('end', serverEndHandler);
+                serverSocket.on('connect', () => {
+                    clientSocket.write([
+                        'HTTP/1.1 200 Connection Established',
+                        'Proxy-agent: Node-VPN',
+                    ].join('\r\n'));
+                    clientSocket.write('\r\n\r\n');
+                    serverSocket.pipe(clientSocket, { end: false });
+                    clientSocket.pipe(serverSocket, { end: false });
+                })
+            } else {
+                clientSocket.end('HTTP/1.1 400 Bad Request\r\n');
+                clientSocket.destroy();
+            }
+        })
     }
 
-    proccessRequest(request, response) {
-        let urlObj = url.parse(request.url);
-        let target = urlObj.protocol + "//" + urlObj.host;
-
-        response.oldWrite = response.write;
-        response.write = (data) => {
-            if (urlObj.href == 'http://www.stardoll.com/c/') {
-                parseString(data.toString(), (err, result) => {
-                    if (typeof result !== 'undefined' && result !== null && typeof result.body !== 'undefined' && typeof result.body.message !== 'undefined') {
-                        let message = result.body.message[0];
-                        if (message.$.type && message.$.type == 'chat') {
-                            this.events.emit('message', message);
-                        }
-                    }
+    runMiddleware(type, req, res) {
+        let prevIndex = -1;
+        let execute = (index) => {
+            if (index <= this.middleware[type].length - 1 && prevIndex !== index) {
+                prevIndex = index;
+                this.middleware[type][index](req, res, () => {
+                    execute(index + 1);
                 });
             }
-            response.oldWrite(data);
         }
 
-        if (urlObj.href == 'http://www.stardoll.com/c/' && this.offlineMode) target = '';
-
-        return target;
+        execute(0);
     }
 
-    getHostPortFromString(hostString, defaultPort) {
-        let host = hostString;
-        let port = defaultPort;
-
-        let result = this.regex_hostport.exec(hostString);
-        if (result != null) {
-            host = result[1];
-            if (result[2] != null) {
-                port = result[3];
-            }
+    useAfter(func) {
+        if (typeof func === 'function') {
+            this.middleware.after.push(func);
         }
-
-        return ([host, port]);
     }
 
-    offline(x) {
-    	this.offlineMode = x;
+    useBefore(func) {
+        if (typeof func === 'function') {
+            this.middleware.before.push(func);
+        }
     }
 
 }
