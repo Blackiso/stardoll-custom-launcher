@@ -23,6 +23,7 @@
     const notificationsToggle = document.querySelector('#notifications-toggle');
     const offlineToggle = document.querySelector('#offline-toggle');
     const languageToggle = document.querySelector('#language-toggle');
+    const proxyToggle = document.querySelector('#proxy-toggle');
     const offlineIndicator = document.querySelector('#offline');
 
     const notificationSound = new Audio('./audio/soft_notification.mp3');
@@ -47,8 +48,15 @@
     let languageFilter = window.localStorage.getItem('language_filter');
 
     if (languageFilter !== null) {
-        setLlanguageFilter(languageFilter);
+        setLanguageFilter(languageFilter);
     }
+
+    let proxy = window.localStorage.getItem('proxy_value');
+
+    if (proxy !== null) {
+        setProxy(proxy);
+    }
+
 
     openNewTab('http://www.stardoll.com/');
 
@@ -81,11 +89,25 @@
         window.localStorage.setItem('notifications', value);
     }
 
-    function setLlanguageFilter(value) {
+    function setLanguageFilter(value) {
         if (typeof value == 'string') value = value === 'true' ? true : false;
         languageToggle.checked = value;
         window.localStorage.setItem('language_filter', value);
         ipcRenderer.send('language_filter', value);
+    }
+
+    function setProxy(value) {
+        if (typeof value == 'string') value = value === 'true' ? true : false;
+        proxyToggle.checked = value;
+        window.localStorage.setItem('proxy_value', value);
+        [...document.querySelectorAll('.need_proxy')].forEach(item => {
+            if (value) {
+                item.classList.remove('hide');
+            }else {
+                item.classList.add('hide');
+            }
+        });
+        ipcRenderer.send('set_proxy', value);
     }
 
     function setOffline(value) {
@@ -254,7 +276,11 @@
     });
 
     languageToggle.addEventListener('change', (e) => {
-        setLlanguageFilter(languageToggle.checked);
+        setLanguageFilter(languageToggle.checked);
+    });
+
+    proxyToggle.addEventListener('change', (e) => {
+        setProxy(proxyToggle.checked);
     });
 
     ipcRenderer.on('zoomIn', (event, messages) => {

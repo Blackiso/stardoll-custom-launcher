@@ -1,7 +1,7 @@
-const httpProxy = require("http-proxy");
-const http = require("http");
-const https = require("https");
-const url = require("url");
+const httpProxy = require('http-proxy');
+const http = require('http');
+const https = require('https');
+const url = require('url');
 const net = require('net');
 const events = require('events');
 const fs = require('fs');
@@ -23,15 +23,13 @@ exports.ProxyServer = class proxy {
         this.server = http.createServer(async (request, response) => {
 
             let urlObj = url.parse(request.url);
-            let target = urlObj.protocol + "//" + urlObj.host;
+            let target = urlObj.protocol + '//' + urlObj.host;
 
             request.target = target;
 
-            console.log("Proxy HTTP request for:", request.target);
+            console.log('Proxy HTTP request for:', request.target);
 
             this.runMiddleware('before', request, response);
-
-            console.log('new target', request.target);
 
             this.proxy.web(request, response, { target: request.target }, function(e) {
                 if (e) console.log(e);

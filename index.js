@@ -2,15 +2,15 @@ const { app, BrowserWindow, BrowserView, globalShortcut, Notification, ipcMain }
 const { ProxyServer } = require('./scripts/proxy');
 const contextMenu = require('electron-context-menu');
 const path = require('path');
-const url = require("url");
+const url = require('url');
 const parseString = require('xml2js').parseString;
-const zlib = require("zlib");
+const zlib = require('zlib');
 const Proxy = new ProxyServer();
 
 let OFFLINE_MODE = false;
 let LANGUAGE_FILTER = false;
 
-app.commandLine.appendSwitch('ppapi-flash-path', path.join((__dirname.includes(".asar") ? process.resourcesPath : __dirname) + '/PepperFlashPlayer.dll'));
+app.commandLine.appendSwitch('ppapi-flash-path', path.join((__dirname.includes('.asar') ? process.resourcesPath : __dirname) + '/PepperFlashPlayer.dll'));
 app.commandLine.appendSwitch('ppapi-flash-version', '32.0.0.293');
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
 
@@ -36,6 +36,10 @@ function createWindow() {
         win.loadURL(`file://${__dirname}/main.html`);
 
         win.webContents.session.setProxy({ proxyRules: Proxy.address });
+
+        ipcMain.on('set_proxy', (event, x) => {
+            win.webContents.session.setProxy({ proxyRules: x ? Proxy.address : '' });
+        });
 
         // win.webContents.openDevTools();
 
